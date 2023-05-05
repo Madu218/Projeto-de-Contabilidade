@@ -10,9 +10,9 @@ import './App.css';
 
 function App() {
   const [values, setValues] = useState([]);
-  const [municipio, setMunicipio] = useState();
   const [selectedUF, setSelectedUF] = useState();
   const [checked, setChecked] = useState(false);
+  const [loading, setLoading] = useState(false);
   
 
   function transformToObjectArray(data) {
@@ -24,15 +24,26 @@ function App() {
         array.push({ municipio, conta, valor });
       }
     }
-  
-    return array.map((item) => {
+    const newArray = array.map((item) => {
       return {
         municipio: item.municipio,
         conta: item.conta,
         valor: item.valor,
       };
     });
+    const result = []
+
+    newArray.map((valor) => {
+      for (let coluna in valor.valor) {
+        for (let despesa in valor.valor[coluna]) {
+          console.log(coluna)
+          result.push({municipio: valor.conta, coluna, despesa, valor: valor.valor[coluna][despesa]})
+        }
+      }
+    })
+    return result
   }
+  
   
   function transformarObjeto(objeto) {
     const municipio = objeto.conta;
@@ -46,12 +57,12 @@ function App() {
   }
 
   const filtrar = () => {
-    const rows = []
-    // for (let i = 0; i < 100; i++) {
-    if (selectedUF && checked) {
-      console.log(tableDataUF)
+    setLoading(true)
+    setTimeout(() => {
+      
+      const rows = []
+      if (selectedUF && checked) {
       for (let i = 0; i < Object.keys(tableDataUF.Conta).length; i++) {
-        console.log('teste')
         const row = {};
 
         // adiciona cada valor da linha no novo objeto
@@ -62,41 +73,14 @@ function App() {
           if (row['UF'] === selectedUF) rows.push(row)
         }
       }
+
+      setValues(rows);
     } else if (selectedUF && !checked) {
-      console.log(tableDataMun)
-      console.log(tableDataMun[selectedUF])
-
-      console.log(transformToObjectArray({[selectedUF]: tableDataMun[selectedUF]}))
-
-      transformToObjectArray({[selectedUF]: tableDataMun[selectedUF]}).map(e => {
-        // console.log(e)
-        transformarObjeto(e).map(row => {
-          rows.push(row)
-          console.log(row)
-        })
-        rows.push(...transformarObjeto(e));
-      })
-
-      // for (let i = 0; i < Object.keys(tableDataMun[selectedUF]).length; i++) {
-      //   const row = {};
-
-      //   Object.keys(tableDataMun).forEach((key) => {
-      //     row[key] = tableDataMun[key][i];
-      //   });
-      //   // if (UF) {
-      //   //   console.log(row)
-      //   //   if (row['Instituição'].slice(-2) === UF) rows.push(row)
-      //   // }
-      //   rows.push(row);
-      // }
+      setValues(transformToObjectArray({[selectedUF]: tableDataMun[selectedUF]}))
     }
-    setValues(rows);
+    setLoading(false)
+  }, 100);
   }
-
-  React.useEffect(() => {
-    console.log(tableDataMun.RS)
-  }, []);
-
 
   return (
     <div>
@@ -104,7 +88,7 @@ function App() {
       <header>
 
         <h2 className="h2-header">Contabilidade de Custos e Gerencial</h2>
-        <h4 className="h4-header">Insira no input abaixo o município do qual deseja obter informações:</h4>
+        <h4 className="h4-header">Insira abaixo o UF do qual deseja obter informações, e caso queira filtre um múnicipio específico:</h4>
         <div className="form">
           <Dropdown value={selectedUF} onChange={(e) => setSelectedUF(e.value)} options={[
             'AC',
@@ -135,13 +119,6 @@ function App() {
             'SE',
             'TO']} placeholder="Selecione Estado"
             filter className="w-full md:w-14rem" />
-          {/* <input
-            type="text"
-            className="input-header"
-            id="input_municipio"
-            placeholder="Digite aqui o município..."
-            value={municipio}
-            onChange={(e) => { setMunicipio(e.target.value) }} /> */}
 
             <div style={{display: 'flex', flexDirection: 'row'}}>
               <InputSwitch checked={checked} onChange={(e) => {
@@ -159,19 +136,21 @@ function App() {
 
       <main id="main">
 
-        <div>
+        {loading ? <label>Aguarde...</label> : <div>
           {checked ? <DataTable value={values} tableStyle={{ minWidth: '50rem', width: '100%' }}>
-            <Column field="Conta" header="Conta" alignHeader='left'></Column>
             <Column field="UF" header="UF" alignHeader='left'></Column>
+            <Column field="Conta" header="Conta" sortable alignHeader='left'></Column>
+            <Column field="Coluna" header="Despesa" alignHeader='left'></Column>
             <Column field="Valor" header="Valor" align="right" alignHeader='right' body={(el) => <div style={{ textAlign: 'right' }}>{Number(el.Valor).toFixed(2)}</div>}></Column>
           </DataTable> :
             <DataTable value={values} tableStyle={{ minWidth: '50rem', width: '100%' }}>
-              <Column field="conta" header="Conta" alignHeader='left'></Column>
-              <Column field="municipio" filter filterPlaceholder="Pesquisar pelo Município" header="Município" alignHeader='left'></Column>
+              <Column field="municipio" sortable filter filterPlaceholder="Pesquisar pelo Município" header="Município" alignHeader='left'></Column>
+              <Column field="coluna" header="Conta" alignHeader='left'></Column>
+              <Column field="despesa" header="Despesa" alignHeader='left'></Column>              
               <Column field="valor" header="Valor" align="right" alignHeader='right' body={(el) => <div style={{ textAlign: 'right' }}>{el.valor.toFixed(2)}</div>}></Column>
             </DataTable>
           }
-        </div>
+        </div>}
 
       </main>
 
