@@ -158,7 +158,7 @@ function App() {
         <h4>
           Projeto desenvolvido por <a className="a-footer" href="https://github.com/geovannaadomingos"
             target="_blank">Geovanna
-            Domingos</a>,
+            Domingos</a>, 
           <a className="a-footer" href="https://github.com/gustavo-ghcs" target="_blank">Gustavo de Hollanda</a>, <a
             className="a-footer" href="https://github.com/higorcunha1" target="_blank">Higor Cunha</a>, <a
               className="a-footer" href="https://github.com/Madu218" target="_blank">Maria Melo</a> e <a
